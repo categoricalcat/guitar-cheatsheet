@@ -12,7 +12,14 @@
           pkgs = nixpkgs.legacyPackages.${system};
         in
         {
-          default = pkgs.mkShellNoCC { packages = [ pkgs.nodejs_latest ]; };
+          default = pkgs.mkShellNoCC {
+            packages = [
+              pkgs.nodejs_26
+              pkgs.statix
+              pkgs.deadnix
+              pkgs.nixfmt
+            ];
+          };
         }
       );
     };

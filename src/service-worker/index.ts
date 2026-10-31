@@ -2,10 +2,13 @@ import { version } from '$app/env';
 import { assets, immutable, prerendered } from '$app/manifest';
 import { self } from '$app/service-worker';
 
-const CACHE = `cache-${version}`;
+import { isPrecachedPath, shouldHandleFetch, staleCacheKeys } from '#lib/cache-policy.ts';
 
-const PRECACHE = [...immutable, ...prerendered, ...assets].map(
-	({ path }) => new URL(path, self.registration.scope).pathname
+const CACHE_PREFIX = 'guitar-cheatsheet-';
+const CACHE = `${CACHE_PREFIX}${version}`;
+
+const PRECACHE = new Set(
+	[...immutable, ...prerendered, ...assets].map(({ path }) => new URL(path, self.registration.scope).pathname)
 );
 
 self.addEventListener('install', (event) => {
@@ -16,20 +19,20 @@ self.addEventListener('activate', (event) => {
 	event.waitUntil(
 		caches
 			.keys()
-			.then((keys) => Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key))))
+			.then((keys) => Promise.all(staleCacheKeys(keys, CACHE_PREFIX, CACHE).map((key) => caches.delete(key))))
 	);
 });
 
 self.addEventListener('fetch', (event) => {
 	const url = new URL(event.request.url);
-	if (event.request.method !== 'GET' || url.origin !== self.location.origin) return;
+	if (!shouldHandleFetch(event.request.method, url.origin, self.location.origin)) return;
 	event.respondWith(respond(event.request, url));
 });
 
 async function respond(request: Request, url: URL): Promise<Response> {
 	const cache = await caches.open(CACHE);
 
-	if (PRECACHE.includes(url.pathname)) {
+	if (isPrecachedPath(url.pathname, PRECACHE)) {
 		const cached = await cache.match(url.pathname);
 		if (cached) return cached;
 	}

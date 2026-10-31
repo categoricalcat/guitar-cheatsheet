@@ -1,34 +1,36 @@
 <script lang="ts">
+	import { chart, NECK } from '#lib/chart.ts';
 	import ChordCard from '#lib/ChordCard.svelte';
-	import { NECK, chart } from '#lib/chart.ts';
 	import { neck } from '#lib/fretboard.ts';
 	import {
+		type Chroma,
 		CHROMAS,
-		MODES,
-		PROGRESSIONS,
-		ROOT_CHORD_TYPES,
-		SCALES,
 		diatonic,
 		intervalMarks,
 		keyInfo,
+		MODES,
+		type MusicScale,
 		noteMarks,
 		pretty,
 		progression,
+		PROGRESSIONS,
+		ROOT_CHORD_TYPES,
 		rootLabel,
 		scaleInfo,
+		SCALES,
 		signature,
 		spell
 	} from '#lib/theory.ts';
 
 	const TONALITIES = ['major', 'minor'] as const;
 
-	let root = $state(0);
-	let scale = $state('major');
-	const open = $state({ key: true, scale: true, intervals: false, diatonic: true, chords: false, progressions: true });
+	let root = $state<Chroma>(0);
+	let scale = $state<MusicScale>('major');
+	const open = $state({ chords: false, diatonic: true, intervals: false, key: true, progressions: true, scale: true });
 
 	const tonic = $derived(spell(root, scale));
 	const info = $derived(scaleInfo(tonic, scale));
-	const chords = $derived(diatonic(tonic, scale));
+	const harmony = $derived(diatonic(tonic, scale));
 	const tonics = $derived({ major: spell(root, 'major'), minor: spell(root, 'minor') });
 </script>
 
@@ -68,14 +70,22 @@
 	<summary>Key</summary>
 	<table>
 		<thead>
-			<tr><th>Key</th><th>Signature</th><th>Relative</th><th>Subdominant</th><th>Dominant</th></tr>
+			<tr>
+				<th scope="col">Key</th>
+				<th scope="col">Signature</th>
+				<th scope="col">Relative</th>
+				<th scope="col">Parallel</th>
+				<th scope="col">Subdominant</th>
+				<th scope="col">Dominant</th>
+			</tr>
 		</thead>
 		<tbody>
 			{#each keyInfo(root) as key (key.name)}
 				<tr>
-					<td>{pretty(key.name)}</td>
+					<th scope="row">{pretty(key.name)}</th>
 					<td>{signature(key.keySignature)}</td>
 					<td>{pretty(key.relative)}</td>
+					<td>{pretty(key.parallel)}</td>
 					<td>{pretty(key.subdominant)}</td>
 					<td>{pretty(key.dominant)}</td>
 				</tr>
@@ -87,14 +97,25 @@
 <details bind:open={open.scale}>
 	<summary>Scale</summary>
 	<table>
+		<thead>
+			<tr>
+				{#each info.formula as step (step)}
+					<th scope="col">{pretty(step)}</th>
+				{/each}
+			</tr>
+		</thead>
 		<tbody>
-			<tr>{#each info.formula as step (step)}<th>{pretty(step)}</th>{/each}</tr>
-			<tr>{#each info.notes as note (note)}<td>{pretty(note)}</td>{/each}</tr>
+			<tr>
+				{#each info.notes as note (note)}
+					<td>{pretty(note)}</td>
+				{/each}
+			</tr>
 		</tbody>
 	</table>
 	{#if open.scale}
 		<div
-			class="chart neck"
+			data-chart
+			class="neck"
 			role="img"
 			aria-label="{tonic} {scale} on the fretboard"
 			{@attach chart(neck(noteMarks(info.notes), root), NECK)}
@@ -106,7 +127,8 @@
 	<summary>Intervals</summary>
 	{#if open.intervals}
 		<div
-			class="chart neck"
+			data-chart
+			class="neck"
 			role="img"
 			aria-label="Intervals from {tonic} on the fretboard"
 			{@attach chart(neck(intervalMarks(root), root), NECK)}
@@ -114,17 +136,19 @@
 	{/if}
 </details>
 
-{#if chords.length > 0}
+{#if harmony.tag === 'available'}
 	<details bind:open={open.diatonic}>
 		<summary>Diatonic chords</summary>
 		{#if open.diatonic}
+			<h2>Triads</h2>
 			<div class="cards">
-				{#each chords as { numeral, triad } (numeral)}
+				{#each harmony.rows as { numeral, triad } (numeral)}
 					<ChordCard symbol={triad} label={numeral} />
 				{/each}
 			</div>
+			<h2>Seventh chords</h2>
 			<div class="cards">
-				{#each chords as { numeral, seventh } (numeral)}
+				{#each harmony.rows as { numeral, seventh } (numeral)}
 					<ChordCard symbol={seventh} label={numeral} />
 				{/each}
 			</div>
@@ -146,8 +170,15 @@
 <details bind:open={open.progressions}>
 	<summary>Progressions</summary>
 	{#each TONALITIES as tonality (tonality)}
-		<h3>{pretty(tonics[tonality])} {tonality}</h3>
+		<h2>{pretty(tonics[tonality])} {tonality}</h2>
 		<table>
+			<thead>
+				<tr>
+					<th scope="col">Progression</th>
+					<th scope="col">Numerals</th>
+					<th scope="col">Chords</th>
+				</tr>
+			</thead>
 			<tbody>
 				{#each PROGRESSIONS.filter((p) => p.tonality === tonality) as { name, numerals } (name)}
 					<tr>
@@ -220,7 +251,7 @@
 		cursor: pointer;
 	}
 
-	h3 {
+	h2 {
 		font-size: 1rem;
 		margin: 0.75rem 0 0.25rem;
 	}

@@ -1,35 +1,41 @@
 <script lang="ts">
-	import { onDestroy, onMount } from 'svelte';
+	import { onMount } from 'svelte';
+
 	import { pretty } from '#lib/theory.ts';
-	import { inputs, listen, type Reading } from '#lib/tuner.ts';
+	import { createBrowserTunerPort } from '#lib/tuner/browser.ts';
+	import { createTunerController, type TunerController } from '#lib/tuner/controller.ts';
+	import { failureMessage, initialTunerModel, type TunerEvent, type TunerModel } from '#lib/tuner/model.ts';
 
 	const IN_TUNE = 5;
 
-	let devices = $state<MediaDeviceInfo[]>([]);
-	let deviceId = $state('');
-	let reading = $state<Reading>();
-	let stop = $state<() => void>();
-	let error = $state('');
+	let controller: TunerController | undefined;
+	let model = $state<TunerModel>(initialTunerModel());
+	const error = $derived(model.tag === 'failed' ? failureMessage(model.failure) : '');
+	const reading = $derived(model.tag === 'listening' ? model.reading : undefined);
+	const cents = $derived(reading === undefined ? ' ' : `${reading.cents > 0 ? '+' : ''}${String(reading.cents)} ¢`);
+	const frequency = $derived(reading === undefined ? ' ' : `${reading.hz.toFixed(1)} Hz`);
+	const needle = $derived(`${String(50 + (reading?.cents ?? 0))}%`);
+	const note = $derived(reading === undefined ? '–' : pretty(reading.note));
+	const announcement = $derived(
+		reading === undefined
+			? 'No pitch detected'
+			: `${pretty(reading.note)}, ${
+					Math.abs(reading.cents) <= IN_TUNE ? 'in tune' : reading.cents < 0 ? 'flat' : 'sharp'
+				}`
+	);
 
-	onMount(async () => {
-		devices = await inputs();
+	onMount(() => {
+		const active = createTunerController(createBrowserTunerPort(), (next) => (model = next));
+		controller = active;
+		active.mount();
+		return () => {
+			active.destroy();
+			if (controller === active) controller = undefined;
+		};
 	});
 
-	onDestroy(() => stop?.());
-
-	async function toggle() {
-		if (stop) {
-			stop();
-			stop = undefined;
-			return;
-		}
-		error = '';
-		try {
-			stop = await listen(deviceId, (next) => (reading = next));
-			devices = await inputs();
-		} catch (cause) {
-			error = cause instanceof Error ? cause.message : String(cause);
-		}
+	function dispatch(event: TunerEvent) {
+		controller?.dispatch(event);
 	}
 </script>
 
@@ -37,25 +43,45 @@
 	<title>Tuner · Guitar Cheatsheet</title>
 </svelte:head>
 
+<h1>Tuner</h1>
+
 <div class="controls">
-	<select bind:value={deviceId} disabled={stop !== undefined} aria-label="Audio input">
+	<select
+		aria-label="Audio input"
+		disabled={model.tag === 'listening' || model.tag === 'starting'}
+		value={model.selectedDeviceId}
+		onchange={(event) => {
+			dispatch({ deviceId: event.currentTarget.value, type: 'device-selected' });
+		}}
+	>
 		<option value="">Default input</option>
-		{#each devices as device (device.deviceId)}
-			<option value={device.deviceId}>{device.label || device.deviceId}</option>
+		{#each model.devices as device (device.id)}
+			<option value={device.id}>{device.label}</option>
 		{/each}
 	</select>
-	<button onclick={toggle}>{stop ? 'Stop' : 'Start'}</button>
+	<button
+		type="button"
+		disabled={model.tag === 'starting'}
+		onclick={() => {
+			dispatch({ type: model.tag === 'listening' ? 'stop-requested' : 'start-requested' });
+		}}
+	>
+		{model.tag === 'starting' ? 'Starting…' : model.tag === 'listening' ? 'Stop' : 'Start'}
+	</button>
 </div>
 
 {#if error}
-	<p class="error">{error}</p>
+	<p class="error" role="alert">{error}</p>
 {/if}
 
-<output class:in-tune={reading !== undefined && Math.abs(reading.cents) <= IN_TUNE}>
-	<span class="note">{reading ? pretty(reading.note) : '–'}</span>
-	<span class="cents">{reading ? `${reading.cents > 0 ? '+' : ''}${reading.cents} ¢` : ' '}</span>
-	<span class="meter"><span class="needle" style:left="{50 + (reading?.cents ?? 0)}%"></span></span>
-	<span class="hz">{reading ? `${reading.hz.toFixed(1)} Hz` : ' '}</span>
+<span class="sr-only" aria-live="polite">{announcement}</span>
+<output aria-label="Tuner reading" class:in-tune={reading !== undefined && Math.abs(reading.cents) <= IN_TUNE}>
+	<span class="note">{note}</span>
+	<span class="cents">{cents}</span>
+	<span aria-hidden="true" class="meter">
+		<span class="needle" style:left={needle}></span>
+	</span>
+	<span class="hz">{frequency}</span>
 </output>
 
 <style>
@@ -77,6 +103,18 @@
 
 	.error {
 		color: var(--accent);
+	}
+
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
 	}
 
 	output {
@@ -103,7 +141,9 @@
 		width: min(100%, 24rem);
 		height: 0.5rem;
 		border-radius: 0.25rem;
-		background: linear-gradient(var(--fg), var(--fg)) center / 2px 100% no-repeat, var(--line);
+		background:
+			linear-gradient(var(--fg), var(--fg)) center / 2px 100% no-repeat,
+			var(--line);
 	}
 
 	.needle {

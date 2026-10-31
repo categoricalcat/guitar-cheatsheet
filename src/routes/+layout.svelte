@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+
 	import type { LayoutProps } from './$types';
 
 	let { children }: LayoutProps = $props();
@@ -40,22 +41,22 @@
 		margin: 0;
 	}
 
-	:global(.chart svg) {
+	:global([data-chart] svg) {
 		display: block;
 		width: 100%;
 		height: auto;
 	}
 
-	:global(.chart .finger-text) {
+	:global([data-chart] .finger-text) {
 		fill: var(--bg);
 	}
 
-	:global(.chart .root:not(.finger-text)) {
+	:global([data-chart] .root:not(.finger-text)) {
 		fill: var(--accent);
 		stroke: var(--accent);
 	}
 
-	:global(.chart .fret-marker) {
+	:global([data-chart] .fret-marker) {
 		fill: var(--line);
 	}
 

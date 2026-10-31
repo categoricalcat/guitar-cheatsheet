@@ -1,6 +1,8 @@
 import type { Attachment } from 'svelte/attachments';
-import { Orientation, SVGuitarChord, type Chord, type ChordSettings } from 'svguitar';
+
+import { type Chord, type ChordSettings, Orientation, SVGuitarChord } from 'svguitar';
 import { Note } from 'tonal';
+
 import { FRETS } from './fretboard.ts';
 import { BOX_FRETS, TUNING } from './voicings.ts';
 
@@ -10,11 +12,11 @@ export const BOX: ChordSettings = { ...THEME, frets: BOX_FRETS };
 
 export const NECK: ChordSettings = {
 	...THEME,
-	orientation: Orientation.horizontal,
+	fretMarkers: [2, 4, 6, 8, { double: true, fret: 11 }],
 	frets: FRETS,
 	noPosition: true,
-	tuning: TUNING.map(Note.pitchClass),
-	fretMarkers: [2, 4, 6, 8, { fret: 11, double: true }]
+	orientation: Orientation.horizontal,
+	tuning: TUNING.map(Note.pitchClass)
 };
 
 export const chart =
@@ -22,5 +24,7 @@ export const chart =
 	(node) => {
 		const diagram = new SVGuitarChord(node).configure(settings).chord(chord);
 		diagram.draw();
-		return () => diagram.remove();
+		return () => {
+			diagram.remove();
+		};
 	};
