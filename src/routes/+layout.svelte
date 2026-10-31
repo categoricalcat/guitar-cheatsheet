@@ -32,13 +32,22 @@
 		--muted: light-dark(#6b6b76, #9a9aa5);
 		--line: light-dark(#d9d9de, #2c2c31);
 		--accent: light-dark(#c2410c, #fb923c);
-		font-family: system-ui, sans-serif;
+		font-family: 'Maple Mono', monospace;
 		color: var(--fg);
 		background: var(--bg);
 	}
 
 	:global(body) {
 		margin: 0;
+	}
+
+	:global(button),
+	:global(input),
+	:global(optgroup),
+	:global(option),
+	:global(select),
+	:global(textarea) {
+		font-family: inherit;
 	}
 
 	:global([data-chart] svg) {

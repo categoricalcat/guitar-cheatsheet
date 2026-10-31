@@ -6,7 +6,7 @@ import { Note } from 'tonal';
 import { FRETS } from './fretboard.ts';
 import { BOX_FRETS, TUNING } from './voicings.ts';
 
-const THEME: ChordSettings = { color: 'currentColor', fontFamily: 'system-ui, sans-serif' };
+const THEME: ChordSettings = { color: 'currentColor', fontFamily: 'Maple Mono, monospace' };
 
 export const BOX: ChordSettings = { ...THEME, frets: BOX_FRETS };
 

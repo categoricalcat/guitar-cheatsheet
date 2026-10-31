@@ -39,7 +39,7 @@
 </svelte:head>
 
 <fieldset class="roots">
-	<legend>Root</legend>
+	<legend>Root note</legend>
 	{#each CHROMAS as chroma (chroma)}
 		<label>
 			<input type="radio" name="root" value={chroma} bind:group={root} />
@@ -48,20 +48,22 @@
 	{/each}
 </fieldset>
 
-<label class="scale">
-	Scale
-	<select bind:value={scale}>
-		<optgroup label="Scales">
-			{#each SCALES as name (name)}
-				<option value={name}>{name}</option>
-			{/each}
-		</optgroup>
-		<optgroup label="Modes">
-			{#each MODES as name (name)}
-				<option value={name}>{name}</option>
-			{/each}
-		</optgroup>
-	</select>
+<label class="scale-picker">
+	<span>Scale / mode</span>
+	<span class="select-shell">
+		<select bind:value={scale}>
+			<optgroup label="Scales">
+				{#each SCALES as name (name)}
+					<option value={name}>{name}</option>
+				{/each}
+			</optgroup>
+			<optgroup label="Modes">
+				{#each MODES as name (name)}
+					<option value={name}>{name}</option>
+				{/each}
+			</optgroup>
+		</select>
+	</span>
 </label>
 
 <h1>{pretty(tonic)} {scale}</h1>
@@ -194,29 +196,53 @@
 
 <style>
 	.roots {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.25rem;
-		margin: 0 0 0.75rem;
+		display: grid;
+		grid-template-columns: repeat(6, minmax(0, 1fr));
+		gap: 0.375rem;
+		margin: 0 0 0.875rem;
 		padding: 0;
 		border: 0;
 	}
 
-	legend,
-	.scale {
+	.roots legend,
+	.scale-picker > span:first-child {
 		color: var(--muted);
-		margin-bottom: 0.25rem;
+		font-size: 0.8rem;
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+	}
+
+	.roots legend {
+		margin-bottom: 0.5rem;
 	}
 
 	.roots label {
 		position: relative;
-		padding: 0.35rem 0.6rem;
+		display: grid;
+		min-height: 2.75rem;
+		padding: 0.35rem 0.25rem;
+		place-items: center;
+		background: var(--bg);
 		border: 1px solid var(--line);
-		border-radius: 0.4rem;
+		border-radius: 0.5rem;
+		font-size: 0.75rem;
+		text-align: center;
+		white-space: nowrap;
 		cursor: pointer;
+		user-select: none;
+		transition:
+			border-color 120ms ease,
+			background-color 120ms ease,
+			color 120ms ease;
+	}
+
+	.roots label:hover {
+		border-color: var(--muted);
 	}
 
 	.roots label:has(:checked) {
+		background: light-dark(#fff7ed, #291b15);
 		border-color: var(--accent);
 		color: var(--accent);
 	}
@@ -231,9 +257,45 @@
 		pointer-events: none;
 	}
 
+	.scale-picker {
+		display: grid;
+		gap: 0.5rem;
+		max-width: 20rem;
+		margin-bottom: 1rem;
+	}
+
+	.select-shell {
+		position: relative;
+		display: block;
+	}
+
+	.select-shell::after {
+		position: absolute;
+		top: 50%;
+		right: 0.85rem;
+		color: var(--muted);
+		content: '⌄';
+		pointer-events: none;
+		transform: translateY(-55%);
+	}
+
 	select {
-		font: inherit;
-		margin-left: 0.5rem;
+		width: 100%;
+		min-height: 2.75rem;
+		padding: 0.5rem 2.5rem 0.5rem 0.75rem;
+		appearance: none;
+		background: var(--bg);
+		border: 1px solid var(--line);
+		border-radius: 0.5rem;
+		color: var(--fg);
+		text-transform: capitalize;
+		cursor: pointer;
+	}
+
+	select:focus-visible {
+		border-color: var(--accent);
+		outline: 2px solid var(--accent);
+		outline-offset: 1px;
 	}
 
 	h1 {
@@ -285,5 +347,17 @@
 
 	.neck :global(svg) {
 		min-width: 40rem;
+	}
+
+	@media (min-width: 48rem) {
+		.roots {
+			grid-template-columns: repeat(12, minmax(0, 1fr));
+		}
+	}
+
+	@media (max-width: 26rem) {
+		.roots {
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+		}
 	}
 </style>

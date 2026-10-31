@@ -91,11 +91,6 @@
 		flex-wrap: wrap;
 	}
 
-	select,
-	button {
-		font: inherit;
-	}
-
 	select {
 		flex: 1;
 		min-width: 0;
