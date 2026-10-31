@@ -1,0 +1,5 @@
+{
+	"extends": ["$app/tsconfig", "./tsconfig.strict.json"],
+	"include": ["src", "vite.config.ts"],
+	"exclude": ["src/service-worker", "src/**/*.test.ts"]
+}
