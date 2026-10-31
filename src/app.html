@@ -4,15 +4,75 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="text-scale" content="scale" />
-		<meta name="description" content="Guitar tuner and key cheatsheet" />
+		<title>Guitar Cheatsheet · Scales, Chords &amp; Tuner</title>
+		<meta
+			name="description"
+			content="A free, offline guitar reference for scales, modes, intervals, chords, progressions, fretboard patterns, and chromatic tuning."
+		/>
+		<meta name="application-name" content="Guitar Cheatsheet" />
+		<meta name="robots" content="index, follow" />
+		<meta name="color-scheme" content="light dark" />
+		<meta name="mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-title" content="Guitar Cheatsheet" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 		<meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)" />
 		<meta name="theme-color" content="#121214" media="(prefers-color-scheme: dark)" />
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content="Guitar Cheatsheet" />
+		<meta property="og:locale" content="en_US" />
+		<meta property="og:title" content="Guitar Cheatsheet · Scales, Chords &amp; Tuner" />
+		<meta
+			property="og:description"
+			content="Scales, modes, intervals, chords, progressions, fretboard patterns, and chromatic tuning—available offline."
+		/>
+		<meta property="og:image" content="https://categoricalcat.github.io/guitar-cheatsheet/icon-512.png" />
+		<meta property="og:image:type" content="image/png" />
+		<meta property="og:image:width" content="512" />
+		<meta property="og:image:height" content="512" />
+		<meta property="og:image:alt" content="Guitar pick icon for Guitar Cheatsheet" />
+		<meta name="twitter:card" content="summary" />
+		<meta name="twitter:title" content="Guitar Cheatsheet · Scales, Chords &amp; Tuner" />
+		<meta
+			name="twitter:description"
+			content="Scales, modes, intervals, chords, progressions, fretboard patterns, and chromatic tuning."
+		/>
+		<meta name="twitter:image" content="https://categoricalcat.github.io/guitar-cheatsheet/icon-512.png" />
+		<meta name="twitter:image:alt" content="Guitar pick icon for Guitar Cheatsheet" />
+		<link rel="canonical" href="./" />
 		<link rel="manifest" href="%sveltekit.assets%/manifest.webmanifest" />
 		<link rel="icon" href="%sveltekit.assets%/icon.svg" type="image/svg+xml" />
 		<link rel="apple-touch-icon" href="%sveltekit.assets%/apple-touch-icon.png" />
+		<script type="application/ld+json">
+			{
+				"@context": "https://schema.org",
+				"@type": "WebApplication",
+				"name": "Guitar Cheatsheet",
+				"description": "A free, offline guitar reference and chromatic tuner.",
+				"url": "https://categoricalcat.github.io/guitar-cheatsheet/",
+				"applicationCategory": "MusicApplication",
+				"browserRequirements": "Requires JavaScript and microphone permission for tuning",
+				"operatingSystem": "Any",
+				"offers": {
+					"@type": "Offer",
+					"price": "0",
+					"priceCurrency": "USD"
+				}
+			}
+		</script>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">
 		<div style="display: contents">%sveltekit.body%</div>
+		<noscript>
+			<main>
+				<h1>Guitar Cheatsheet</h1>
+				<p>
+					A free guitar reference for scales, modes, intervals, chords, progressions, fretboard patterns, and chromatic
+					tuning.
+				</p>
+				<p>JavaScript is required for the interactive cheatsheet and tuner.</p>
+			</main>
+		</noscript>
 	</body>
 </html>

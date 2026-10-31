@@ -1,7 +1,9 @@
 {
 	"name": "Guitar Cheatsheet",
 	"short_name": "Guitar",
-	"description": "Guitar tuner and key cheatsheet",
+	"description": "Offline guitar scales, chords, progressions, fretboard patterns, and chromatic tuner.",
+	"lang": "en",
+	"categories": ["education", "music", "utilities"],
 	"start_url": "./",
 	"scope": "./",
 	"display": "standalone",
